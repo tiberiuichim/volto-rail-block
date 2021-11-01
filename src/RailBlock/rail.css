@@ -1,0 +1,13 @@
+.block-placeholder {
+  width: 100%;
+  min-height: 1em;
+  display: flex;
+  justify-content: center;
+}
+.block-placeholder button {
+  visibility: hidden;
+}
+
+.block-placeholder:hover button {
+  visibility: visible !important;
+}
