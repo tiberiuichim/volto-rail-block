@@ -1,4 +1,5 @@
 import React from 'react';
+import { v4 as uuid } from 'uuid';
 import { Button, Grid } from 'semantic-ui-react';
 import {
   BlockChooserButton,
@@ -11,8 +12,10 @@ import config from '@plone/volto/registry';
 import EditBlock from '@plone/volto/components/manage/Blocks/Block/Edit';
 import { ButtonComponent } from '@plone/volto/components/manage/BlockChooser/BlockChooserButton';
 import { getBlocks, changeBlock } from '@plone/volto/helpers';
-import { v4 as uuid } from 'uuid';
+import { setSidebarTab } from '@plone/volto/actions';
+import { useDispatch } from 'react-redux';
 
+import configSVG from '@plone/volto/icons/configuration.svg';
 import clearSVG from '@plone/volto/icons/clear.svg';
 
 import './rail.css';
@@ -186,10 +189,35 @@ const RailBlockEdit = (props) => {
   ]);
 
   const [selectedBlock, setSelectedBlock] = React.useState(mainColumnIndex);
+  const node = React.createRef();
+  const dispatch = useDispatch();
 
   return (
-    <div className="rail-block">
-      <Grid centered columns={columnsCount}>
+    <div className="rail-block" ref={node}>
+      {selected && 'selected'}
+      {selectedBlock}
+
+      {selected && (
+        <div className="toolbar">
+          <Button.Group>
+            <Button
+              aria-label={`Select row block`}
+              icon
+              basic
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedBlock(null);
+                node.current.focus();
+                dispatch(setSidebarTab(1));
+              }}
+            >
+              <Icon name={configSVG} size="24px" />
+            </Button>
+          </Button.Group>
+        </div>
+      )}
+
+      <Grid centered columns={data?.blocks_layout?.items?.length || 1}>
         {getBlocks(data).map(([blockId, blockData], index) => (
           <Grid.Column key={index}>
             <BlockDelegate
@@ -226,9 +254,16 @@ const RailBlockEdit = (props) => {
               isMainBlock={index === mainColumnIndex}
               index={index}
               selected={selected && index === selectedBlock}
-              handleKeyDown={() => {}}
-              onMoveBlock={() => {}}
+              handleKeyDown={() => {
+                // TODO: handle this
+                console.log('handleKeyDown');
+              }}
+              onMoveBlock={() => {
+                // TODO: handle this
+                console.log('onMoveBlock');
+              }}
               onChangeField={() => {
+                // TODO: handle this
                 console.log('onChangeField');
               }}
             />
