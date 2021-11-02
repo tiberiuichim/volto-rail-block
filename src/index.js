@@ -21,6 +21,9 @@ const applyConfig = (config) => {
       view: [],
     },
     defaultBlockType: config.settings.defaultBlockType,
+    blockHasOwnFocusManagement: true,
+    columnsCount: 3,
+    mainColumnIndex: 1,
   };
 
   config.settings.defaultBlockType = 'row';
