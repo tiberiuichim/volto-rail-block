@@ -4,7 +4,7 @@ import { getBlocks } from '@plone/volto/helpers';
 import RenderBlock from './RenderBlock';
 import { blockHasValue } from './utils';
 
-const FloatedColumnsLayout = ({ data, metadata, path, content }) => {
+const GridColumnsLayout = ({ data, metadata, path, content }) => {
   const blocks = getBlocks(data);
   return (
     <Grid columns={blocks.length} className="floated-columns-layout">
@@ -20,6 +20,7 @@ const FloatedColumnsLayout = ({ data, metadata, path, content }) => {
             block={blockId}
           />
         ) : (
+          // TODO: maybe don't render this?
           <Grid.Column></Grid.Column>
         ),
       )}
@@ -27,4 +28,4 @@ const FloatedColumnsLayout = ({ data, metadata, path, content }) => {
   );
 };
 
-export default FloatedColumnsLayout;
+export default GridColumnsLayout;
