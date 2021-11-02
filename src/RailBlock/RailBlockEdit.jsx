@@ -10,15 +10,19 @@ import { RailBlockSchema } from './schema';
 import config from '@plone/volto/registry';
 import EditBlock from '@plone/volto/components/manage/Blocks/Block/Edit';
 import { ButtonComponent } from '@plone/volto/components/manage/BlockChooser/BlockChooserButton';
-import { getBlocks, blockHasValue, changeBlock } from '@plone/volto/helpers';
+import { getBlocks, changeBlock } from '@plone/volto/helpers';
 import { v4 as uuid } from 'uuid';
 
 import clearSVG from '@plone/volto/icons/clear.svg';
 
 import './rail.css';
 
+const EMPTY = '_empty';
+
 const BlockPlaceholder = (props) => {
-  const [visible, setVisible] = React.useState(false);
+  // const [visible, setVisible] = React.useState(false);
+  // TODO: right now we rely on BlockChooser being able to recognize empty text
+  // as empty block.
   return (
     <div className="block-placeholder">
       <BlockChooserButton
@@ -45,6 +49,8 @@ const emptyBlock = (defaultBlockType, cols = 3) => {
     blocks_layout,
   };
 };
+
+const blockHasValue = (data) => data?.['@type'] !== EMPTY;
 
 const BlockDelegate = (props) => {
   const {
@@ -118,7 +124,7 @@ const mutateBlock = (formData, blockId, id, value) => {
   };
 };
 
-const deleteBlock = (formData, blockId, defaultBlockType) => {
+const deleteBlock = (formData, blockId) => {
   const index = formData?.blocks_layout?.items.indexOf(blockId);
   const newId = uuid();
   return {
@@ -128,7 +134,7 @@ const deleteBlock = (formData, blockId, defaultBlockType) => {
       ...Object.keys(formData.blocks)
         .filter((bid) => bid !== blockId)
         .map((bid) => ({ [bid]: formData.blocks[bid] })),
-      { [newId]: { '@type': defaultBlockType } },
+      { [newId]: { '@type': EMPTY } },
     ),
     blocks_layout: {
       ...formData.blocks_layout,
@@ -160,12 +166,12 @@ const RailBlockEdit = (props) => {
 
   const hasData = Object.keys(data.blocks || {}).length > 0;
 
-  // The internal storage model is: MainColumn, LeftColumn, RightColumn
+  // The internal storage model is: {blocks, blocks_layout}
   React.useEffect(() => {
     if (!hasData) {
-      onChangeBlock(block, emptyBlock(defaultBlockType, 3));
+      onChangeBlock(block, emptyBlock(defaultBlockType, columnsCount));
     }
-  }, [block, hasData, defaultBlockType, onChangeBlock]);
+  }, [block, hasData, defaultBlockType, onChangeBlock, columnsCount]);
 
   const [selectedBlock, setSelectedBlock] = React.useState(mainColumnIndex);
 
@@ -189,7 +195,7 @@ const RailBlockEdit = (props) => {
               onMoveBlock={() => {}}
               onInsertBlock={() => {}}
               onDeleteBlock={(id) => {
-                const newFormData = deleteBlock(data, id, defaultBlockType);
+                const newFormData = deleteBlock(data, id);
                 onChangeBlock(block, newFormData);
               }}
               onFocusPreviousBlock={props.onFocusPreviousBlock}
