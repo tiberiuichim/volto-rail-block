@@ -126,9 +126,6 @@ const RailBlockEdit = (props) => {
   const node = React.createRef();
   const dispatch = useDispatch();
 
-  // {selected && 'selected'}
-  // {selectedBlock}
-
   return (
     <div className="rail-block" ref={node}>
       {selected && (

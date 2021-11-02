@@ -1,10 +1,12 @@
 import React from 'react';
 import config from '@plone/volto/registry';
 import {
+  withBlockExtensions,
   getBlocks,
   blockHasValue as voltoBlockHasValue,
 } from '@plone/volto/helpers';
 import { defineMessages, injectIntl } from 'react-intl';
+import { compose } from 'redux';
 
 import { blockHasValue } from './utils';
 
@@ -23,6 +25,7 @@ const RailBlockView = (props) => {
     content,
     metadata,
     blocksConfig = config.blocks.blocksConfig,
+    variation,
   } = props;
   const { mainColumnIndex = blocksConfig.row.mainColumnIndex ?? 1 } = data;
 
@@ -36,6 +39,7 @@ const RailBlockView = (props) => {
   const needsGrid = secondaryBlocks.length > 0;
   const [mainBlockId, mainBlock] = blocks[mainColumnIndex];
   const Block = blocksConfig[mainBlock?.['@type']]?.view;
+  const { template: ViewTemplate } = variation;
 
   return !needsGrid ? (
     Block ? (
@@ -54,8 +58,8 @@ const RailBlockView = (props) => {
       </div>
     )
   ) : (
-    <div>Rails block</div>
+    <ViewTemplate {...props} />
   );
 };
 
-export default injectIntl(RailBlockView);
+export default compose(injectIntl, withBlockExtensions)(RailBlockView);

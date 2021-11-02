@@ -1,7 +1,12 @@
 // import React from 'react';
 
 import listBulletSVG from '@plone/volto/icons/list-bullet.svg';
-import { RailBlockView, RailBlockEdit } from './RailBlock';
+import {
+  RailBlockView,
+  RailBlockEdit,
+  FloatedColumnsLayout,
+  GridColumnsLayout,
+} from './RailBlock';
 
 const applyConfig = (config) => {
   // TODO: rename to Rail???
@@ -24,6 +29,20 @@ const applyConfig = (config) => {
     blockHasOwnFocusManagement: true,
     columnsCount: 3,
     mainColumnIndex: 1,
+    variations: [
+      {
+        isDefault: true,
+        id: 'floated',
+        title: 'Floated columns',
+        template: FloatedColumnsLayout,
+      },
+      {
+        isDefault: false,
+        id: 'grid',
+        title: 'Grid columns',
+        template: GridColumnsLayout,
+      },
+    ],
   };
 
   config.settings.defaultBlockType = 'row';
