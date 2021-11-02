@@ -19,9 +19,10 @@ const FloatedColumnsLayout = ({ data, metadata, path, content }) => {
         block={blockId}
         as={index === mainColumnIndex ? React.Fragment : 'div'}
         wrapperProps={{
-          className: cx({
-            'floated-left': index < mainColumnIndex,
-            'floated-right': index > mainColumnIndex,
+          className: cx('ui', {
+            left: index < mainColumnIndex,
+            right: index > mainColumnIndex,
+            floated: index < mainColumnIndex || index > mainColumnIndex,
           }),
         }}
       />
