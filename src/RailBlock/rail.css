@@ -1,13 +1,20 @@
-.block-placeholder {
+.selected .block-placeholder {
   width: 100%;
   min-height: 1em;
+  height: 100%;
   display: flex;
   justify-content: center;
 }
+
+.selected .block-placeholder:hover {
+  background-color: #EEE;
+}
+
 .block-placeholder button {
   visibility: hidden;
 }
 
-.block-placeholder:hover button {
+.selected .block-placeholder:hover button {
+  background-color: inherit!important;   /* TODO: fix it */
   visibility: visible !important;
 }

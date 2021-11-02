@@ -20,7 +20,6 @@ import './rail.css';
 const EMPTY = '_empty';
 
 const BlockPlaceholder = (props) => {
-  // const [visible, setVisible] = React.useState(false);
   // TODO: right now we rely on BlockChooser being able to recognize empty text
   // as empty block.
   return (
@@ -34,12 +33,14 @@ const BlockPlaceholder = (props) => {
   );
 };
 
-const emptyBlock = (defaultBlockType, cols = 3) => {
+const emptyBlock = (defaultBlockType, cols = 3, mainColumnIndex) => {
   const blockIds = new Array(cols).fill(null).map(() => uuid());
 
   const blocks = Object.assign(
     {},
-    ...blockIds.map((id) => ({ [id]: { '@type': defaultBlockType } })),
+    ...blockIds.map((id, index) => ({
+      [id]: { '@type': index === mainColumnIndex ? defaultBlockType : EMPTY },
+    })),
   );
   const blocks_layout = { items: blockIds };
 
@@ -102,8 +103,10 @@ const BlockDelegate = (props) => {
   );
 };
 
-const mutateBlock = (formData, blockId, id, value) => {
+const mutateBlock = (formData, blockId, value, id) => {
   const index = formData?.blocks_layout?.items.indexOf(blockId);
+  const newId = id || blockId;
+
   return {
     ...formData,
     blocks: Object.assign(
@@ -111,13 +114,13 @@ const mutateBlock = (formData, blockId, id, value) => {
       ...Object.keys(formData.blocks)
         .filter((bid) => bid !== blockId)
         .map((bid) => ({ [bid]: formData.blocks[bid] })),
-      { [id]: value },
+      { [newId]: value },
     ),
     blocks_layout: {
       ...formData.blocks_layout,
       items: [
         ...formData.blocks_layout.items.slice(0, index),
-        id,
+        newId,
         ...formData.blocks_layout.items.slice(index + 1),
       ],
     },
@@ -157,7 +160,6 @@ const RailBlockEdit = (props) => {
     pathname,
   } = props;
   const schema = RailBlockSchema();
-  // const { blocks = {}, blocks_layout = {} } = data;
   const {
     defaultBlockType = 'text',
     columnsCount = 3,
@@ -169,9 +171,19 @@ const RailBlockEdit = (props) => {
   // The internal storage model is: {blocks, blocks_layout}
   React.useEffect(() => {
     if (!hasData) {
-      onChangeBlock(block, emptyBlock(defaultBlockType, columnsCount));
+      onChangeBlock(
+        block,
+        emptyBlock(defaultBlockType, columnsCount, mainColumnIndex),
+      );
     }
-  }, [block, hasData, defaultBlockType, onChangeBlock, columnsCount]);
+  }, [
+    block,
+    hasData,
+    defaultBlockType,
+    onChangeBlock,
+    columnsCount,
+    mainColumnIndex,
+  ]);
 
   const [selectedBlock, setSelectedBlock] = React.useState(mainColumnIndex);
 
@@ -185,28 +197,28 @@ const RailBlockEdit = (props) => {
                 if (selectedBlock !== index) setSelectedBlock(index);
               }}
               id={block}
-              onChangeField={(id, value) => {}}
               pathname={pathname}
               properties={data}
               metadata={metadata}
               type={blockData['@type']}
-              handleKeyDown={() => {}}
-              onAddBlock={() => {}}
-              onMoveBlock={() => {}}
-              onInsertBlock={() => {}}
+              onAddBlock={props.onAddBlock}
+              onInsertBlock={(id, value) => {
+                const newFormData = mutateBlock(data, blockId, value);
+                onChangeBlock(block, newFormData);
+              }}
               onDeleteBlock={(id) => {
                 const newFormData = deleteBlock(data, id);
                 onChangeBlock(block, newFormData);
               }}
               onFocusPreviousBlock={props.onFocusPreviousBlock}
               onFocusNextBlock={props.onFocusNextBlock}
-              onSelectBlock={() => {}}
+              onSelectBlock={props.onSelectBlock}
               onChangeBlock={(blockId, value) => {
                 const newFormData = changeBlock(data, blockId, value);
                 onChangeBlock(block, newFormData);
               }}
               onMutateBlock={(id, value) => {
-                const newFormData = mutateBlock(data, blockId, uuid(), value);
+                const newFormData = mutateBlock(data, blockId, value, uuid());
                 onChangeBlock(block, newFormData);
               }}
               data={blockData}
@@ -214,6 +226,11 @@ const RailBlockEdit = (props) => {
               isMainBlock={index === mainColumnIndex}
               index={index}
               selected={selected && index === selectedBlock}
+              handleKeyDown={() => {}}
+              onMoveBlock={() => {}}
+              onChangeField={() => {
+                console.log('onChangeField');
+              }}
             />
           </Grid.Column>
         ))}
@@ -237,16 +254,3 @@ const RailBlockEdit = (props) => {
 };
 
 export default RailBlockEdit;
-
-//<BlockChooserButton
-//  data={this.props.data}
-//  block={this.props.block}
-//  onInsertBlock={(id, value) => {
-//    this.props.onSelectBlock(this.props.onInsertBlock(id, value));
-//  }}
-//  allowedBlocks={this.props.allowedBlocks}
-//  blocksConfig={this.props.blocksConfig}
-//  size="24px"
-//  className="block-add-button"
-//  properties={this.props.properties}
-///>
