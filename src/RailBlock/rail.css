@@ -18,3 +18,9 @@
   background-color: inherit!important;   /* TODO: fix it */
   visibility: visible !important;
 }
+
+ui.left.floated {
+  max-width: 20%;
+  float: left;
+  margin-right: 1em;
+}
