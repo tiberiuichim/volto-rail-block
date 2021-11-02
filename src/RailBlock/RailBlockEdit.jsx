@@ -14,13 +14,12 @@ import { ButtonComponent } from '@plone/volto/components/manage/BlockChooser/Blo
 import { getBlocks, changeBlock } from '@plone/volto/helpers';
 import { setSidebarTab } from '@plone/volto/actions';
 import { useDispatch } from 'react-redux';
+import { emptyBlock, blockHasValue, mutateBlock, deleteBlock } from './utils';
 
 import configSVG from '@plone/volto/icons/configuration.svg';
 import clearSVG from '@plone/volto/icons/clear.svg';
 
 import './rail.css';
-
-const EMPTY = '_empty';
 
 const BlockPlaceholder = (props) => {
   // TODO: right now we rely on BlockChooser being able to recognize empty text
@@ -35,26 +34,6 @@ const BlockPlaceholder = (props) => {
     </div>
   );
 };
-
-const emptyBlock = (defaultBlockType, cols = 3, mainColumnIndex) => {
-  const blockIds = new Array(cols).fill(null).map(() => uuid());
-
-  const blocks = Object.assign(
-    {},
-    ...blockIds.map((id, index) => ({
-      [id]: { '@type': index === mainColumnIndex ? defaultBlockType : EMPTY },
-    })),
-  );
-  const blocks_layout = { items: blockIds };
-
-  return {
-    '@type': 'row',
-    blocks,
-    blocks_layout,
-  };
-};
-
-const blockHasValue = (data) => data?.['@type'] !== EMPTY;
 
 const BlockDelegate = (props) => {
   const {
@@ -106,53 +85,6 @@ const BlockDelegate = (props) => {
   );
 };
 
-const mutateBlock = (formData, blockId, value, id) => {
-  const index = formData?.blocks_layout?.items.indexOf(blockId);
-  const newId = id || blockId;
-
-  return {
-    ...formData,
-    blocks: Object.assign(
-      {},
-      ...Object.keys(formData.blocks)
-        .filter((bid) => bid !== blockId)
-        .map((bid) => ({ [bid]: formData.blocks[bid] })),
-      { [newId]: value },
-    ),
-    blocks_layout: {
-      ...formData.blocks_layout,
-      items: [
-        ...formData.blocks_layout.items.slice(0, index),
-        newId,
-        ...formData.blocks_layout.items.slice(index + 1),
-      ],
-    },
-  };
-};
-
-const deleteBlock = (formData, blockId) => {
-  const index = formData?.blocks_layout?.items.indexOf(blockId);
-  const newId = uuid();
-  return {
-    ...formData,
-    blocks: Object.assign(
-      {},
-      ...Object.keys(formData.blocks)
-        .filter((bid) => bid !== blockId)
-        .map((bid) => ({ [bid]: formData.blocks[bid] })),
-      { [newId]: { '@type': EMPTY } },
-    ),
-    blocks_layout: {
-      ...formData.blocks_layout,
-      items: [
-        ...formData.blocks_layout.items.slice(0, index),
-        newId,
-        ...formData.blocks_layout.items.slice(index + 1),
-      ],
-    },
-  };
-};
-
 const RailBlockEdit = (props) => {
   const {
     selected,
@@ -166,8 +98,10 @@ const RailBlockEdit = (props) => {
   const {
     defaultBlockType = 'text',
     columnsCount = 3,
-    mainColumnIndex = 1,
   } = config.blocks.blocksConfig.row;
+  const mainColumnIndex =
+    data.mainColumnIndex ??
+    (config.blocks.blocksConfig.row.mainColumnIndex || 1);
 
   const hasData = Object.keys(data.blocks || {}).length > 0;
 
@@ -192,11 +126,11 @@ const RailBlockEdit = (props) => {
   const node = React.createRef();
   const dispatch = useDispatch();
 
+  // {selected && 'selected'}
+  // {selectedBlock}
+
   return (
     <div className="rail-block" ref={node}>
-      {selected && 'selected'}
-      {selectedBlock}
-
       {selected && (
         <div className="toolbar">
           <Button.Group>
